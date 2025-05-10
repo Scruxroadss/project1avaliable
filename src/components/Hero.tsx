@@ -1,8 +1,16 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleDemoClick = () => {
+    // Navegamos para página de demonstração (poderíamos também abrir um modal)
+    navigate('/demo');
+  };
+
   return (
     <div className="relative overflow-hidden bg-white py-16 sm:py-24">
       <div className="absolute inset-y-0 -right-10 w-[40%] bg-stone-50/50 skew-x-[-10deg] transform origin-top-right"></div>
@@ -38,7 +46,12 @@ const Hero = () => {
                 Começar grátis
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="border-stone-300">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-stone-300"
+                onClick={handleDemoClick}
+              >
                 Ver demonstração
               </Button>
             </div>
@@ -77,7 +90,10 @@ const Hero = () => {
                   ))}
                 </div>
                 
-                <Button className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-stone-900">
+                <Button 
+                  className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-stone-900"
+                  onClick={() => navigate('/leads')}
+                >
                   Ver todos os leads
                 </Button>
               </div>

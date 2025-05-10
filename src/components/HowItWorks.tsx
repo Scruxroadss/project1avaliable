@@ -1,33 +1,41 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { ProfileIcon, AISearchIcon, LeadListIcon, ContactIcon } from "./Assets";
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+
   const steps = [
     {
       number: "01",
       title: "Defina seu perfil de cliente ideal",
-      description: "Informe quais tipos de materiais você vende, regiões de atuação e perfil ideal de cliente."
+      description: "Informe quais tipos de materiais você vende, regiões de atuação e perfil ideal de cliente.",
+      icon: ProfileIcon
     },
     {
       number: "02",
       title: "Nossa IA inicia a busca",
-      description: "Nossos algoritmos vasculham a web e bases de dados exclusivas em busca de leads que correspondam ao seu perfil."
+      description: "Nossos algoritmos vasculham a web e bases de dados exclusivas em busca de leads que correspondam ao seu perfil.",
+      icon: AISearchIcon
     },
     {
       number: "03",
       title: "Receba leads qualificados",
-      description: "Toda semana você recebe uma lista de leads com alto potencial de compra, incluindo dados de contato."
+      description: "Toda semana você recebe uma lista de leads com alto potencial de compra, incluindo dados de contato.",
+      icon: LeadListIcon
     },
     {
       number: "04",
       title: "Inicie o contato de forma otimizada",
-      description: "Contate os leads com nossos templates e automações ou exporte para seu CRM para seguir o processo de vendas."
+      description: "Contate os leads com nossos templates e automações ou exporte para seu CRM para seguir o processo de vendas.",
+      icon: ContactIcon
     }
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white" id="howItWorks">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h2 className="text-stone-800 mb-4">Como <span className="text-amber-600">funciona</span></h2>
@@ -56,8 +64,8 @@ const HowItWorks = () => {
                       <div className="w-3 h-3 bg-white rounded-full"></div>
                     </div>
                     
-                    <div className="h-48 bg-stone-200 rounded-lg flex items-center justify-center">
-                      <p className="text-stone-500 font-medium">Ilustração do passo {index + 1}</p>
+                    <div className="h-48 bg-stone-50 rounded-lg flex items-center justify-center">
+                      {step.icon && <step.icon />}
                     </div>
                   </div>
                 </div>
@@ -73,7 +81,11 @@ const HowItWorks = () => {
           </div>
           
           <div className="mt-16 text-center">
-            <Button size="lg" className="bg-amber-500 hover:bg-amber-600 text-stone-900">
+            <Button 
+              size="lg" 
+              className="bg-amber-500 hover:bg-amber-600 text-stone-900"
+              onClick={() => navigate('/signup')}
+            >
               Comece agora mesmo
             </Button>
           </div>
