@@ -4,9 +4,48 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    company: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Simple validation
+    if (!formData.name || !formData.email || !formData.password || !formData.company) {
+      toast({
+        title: "Erro no formulário",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Show success message
+    toast({
+      title: "Conta criada com sucesso",
+      description: "Bem-vindo ao Radar de Oportunidades B2B!",
+    });
+
+    // Navigate to dashboard after successful signup
+    navigate('/dashboard');
+  };
   
   return (
     <div className="min-h-screen">
@@ -20,12 +59,14 @@ const Signup = () => {
             </p>
             
             <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-md border border-stone-100">
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-2 text-left">
                   <label htmlFor="name" className="text-sm font-medium text-stone-700">Nome completo</label>
                   <input 
                     type="text" 
                     id="name" 
+                    value={formData.name}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Seu nome" 
                   />
@@ -36,6 +77,8 @@ const Signup = () => {
                   <input 
                     type="email" 
                     id="email" 
+                    value={formData.email}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="seu@email.com" 
                   />
@@ -46,6 +89,8 @@ const Signup = () => {
                   <input 
                     type="password" 
                     id="password" 
+                    value={formData.password}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Crie uma senha segura" 
                   />
@@ -56,6 +101,8 @@ const Signup = () => {
                   <input 
                     type="text" 
                     id="company" 
+                    value={formData.company}
+                    onChange={handleChange}
                     className="w-full px-4 py-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Nome da sua empresa" 
                   />
@@ -77,7 +124,10 @@ const Signup = () => {
             
             <p className="mt-8 text-stone-500">
               Já possui uma conta?
-              <a href="#" className="text-amber-600 hover:underline ml-1">Entrar</a>
+              <Button variant="link" className="p-0 h-auto text-amber-600 hover:underline ml-1"
+                onClick={() => navigate('/dashboard/login')}>
+                Entrar
+              </Button>
             </p>
             
             <Button 

@@ -49,6 +49,7 @@ const RegisterPage: React.FC = () => {
       title: "Registro realizado com sucesso",
       description: "Bem-vindo ao Radar de Oportunidades B2B!",
     });
+    // Ensure we navigate to the dashboard after successful registration
     navigate('/dashboard');
   };
 
