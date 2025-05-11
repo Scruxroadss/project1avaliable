@@ -14,8 +14,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
 
-    --primary: 38 92% 50%;
-    --primary-foreground: 26 83.3% 14.1%;
+    /* Ajustando para nossa nova cor primária #F9802D (30, 95%, 58%) */
+    --primary: 30 95% 58%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 60 4.8% 95.9%;
     --secondary-foreground: 24 9.8% 10%;
@@ -31,9 +32,19 @@
 
     --border: 20 5.9% 90%;
     --input: 20 5.9% 90%;
-    --ring: 38 92% 50%;
+    --ring: 30 95% 58%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Sidebar específico */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 20 14.3% 4.1%;
+    --sidebar-primary: 30 95% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 95% 95%;
+    --sidebar-accent-foreground: 30 95% 58%;
+    --sidebar-border: 20 5.9% 90%;
+    --sidebar-ring: 30 95% 58%;
   }
 
   .dark {
@@ -46,8 +57,8 @@
     --popover: 20 14.3% 4.1%;
     --popover-foreground: 60 9.1% 97.8%;
 
-    --primary: 38 92% 50%;
-    --primary-foreground: 26 83.3% 14.1%;
+    --primary: 30 95% 58%;
+    --primary-foreground: 20 14.3% 4.1%;
 
     --secondary: 12 6.5% 15.1%;
     --secondary-foreground: 60 9.1% 97.8%;
@@ -63,7 +74,7 @@
 
     --border: 12 6.5% 15.1%;
     --input: 12 6.5% 15.1%;
-    --ring: 38 92% 50%;
+    --ring: 30 95% 58%;
   }
 }
 
@@ -101,5 +112,33 @@
   
   .highlight:after {
     @apply content-[''] absolute -z-10 left-0 bottom-1 w-full h-3 bg-amber-200/60;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-soft hover:-translate-y-1;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-sm bg-white/80;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-150 {
+    animation-delay: 150ms;
+  }
+  
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+  
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .frosted-glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
   }
 }
