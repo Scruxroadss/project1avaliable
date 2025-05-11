@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -236,8 +237,8 @@ const CustomCandlestickChart = ({ data, height = 300 }: { data: any[]; height?: 
             />
             {/* Rectangle for open to close */}
             <ReferenceArea
-              x1={parseFloat(index) - 0.25}
-              x2={parseFloat(index) + 0.25}
+              x1={String(parseFloat(index.toString()) - 0.25)}
+              x2={String(parseFloat(index.toString()) + 0.25)}
               y1={entry.open}
               y2={entry.close}
               fill={entry.close >= entry.open ? "#16a34a" : "#dc2626"}
