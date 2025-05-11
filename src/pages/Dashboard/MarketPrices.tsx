@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { 
   TrendingUp, 
   TrendingDown, 
   Search, 
@@ -20,7 +26,7 @@ import {
   ChevronDown,
   BarChart4,
   LineChart
-} from "lucide-react";
+} from 'lucide-react';
 import { 
   LineChart as RechartsLineChart,
   Line, 
@@ -178,7 +184,7 @@ const formatCurrency = (value: number) => {
 };
 
 // Custom candlestick chart component
-const CustomCandleChart = ({ data, height = 300 }: { data: any[]; height?: number }) => {
+const CustomCandlestickChart = ({ data, height = 300 }: { data: any[]; height?: number }) => {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={data}>
@@ -397,7 +403,7 @@ const MarketPrices = () => {
           </ResponsiveContainer>
         );
       case 'candle':
-        return <CustomCandleChart data={selectedMaterial.priceHistory} />;
+        return <CustomCandlestickChart data={selectedMaterial.priceHistory} />;
       default:
         return null;
     }
@@ -567,7 +573,71 @@ const MarketPrices = () => {
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  {/* Filter dropdown content */}
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="p-2">
+                      <h4 className="mb-1 text-sm font-medium">Tipo de Material</h4>
+                      <Select value={materialFilter} onValueChange={setMaterialFilter}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione um tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {materialTypes.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="p-2">
+                      <h4 className="mb-1 text-sm font-medium">Origem</h4>
+                      <Select value={originFilter} onValueChange={setOriginFilter}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione uma origem" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {originRegions.map((region) => (
+                            <SelectItem key={region.value} value={region.value}>
+                              {region.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="p-2">
+                      <h4 className="mb-1 text-sm font-medium">Faixa de Preço</h4>
+                      <Select value={priceFilter} onValueChange={setPriceFilter}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione uma faixa" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {priceRanges.map((range) => (
+                            <SelectItem key={range.value} value={range.value}>
+                              {range.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="p-2 flex justify-end">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          setMaterialFilter("all");
+                          setOriginFilter("all");
+                          setPriceFilter("all");
+                        }} 
+                        className="mr-2"
+                      >
+                        Limpar
+                      </Button>
+                      <Button size="sm">Aplicar</Button>
+                    </div>
+                  </DropdownMenuContent>
                 </DropdownMenu>
               </div>
             </div>
