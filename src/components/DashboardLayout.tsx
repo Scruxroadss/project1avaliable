@@ -13,7 +13,12 @@ import {
   Bell,
   Search,
   ChevronDown,
-  User
+  User,
+  MessageSquare,
+  Store,
+  Briefcase,
+  TrendingUp,
+  Info
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,6 +61,11 @@ const DashboardLayout: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Meus Leads', href: '/dashboard/leads', icon: Users },
+    { name: 'Comunidade', href: '/dashboard/community', icon: MessageSquare },
+    { name: 'Marketplace', href: '/dashboard/marketplace', icon: Store },
+    { name: 'Arquitetos', href: '/dashboard/architects', icon: Briefcase },
+    { name: 'Preço do Mercado', href: '/dashboard/market-prices', icon: TrendingUp },
+    { name: 'Consultoria', href: '/dashboard/consulting', icon: Info },
     { name: 'Integrações', href: '/dashboard/integrations', icon: ArrowRightLeft },
     { name: 'Planos', href: '/dashboard/plans', icon: CreditCard },
     { name: 'Configurações', href: '/dashboard/settings', icon: Settings },
@@ -122,6 +132,11 @@ const DashboardLayout: React.FC = () => {
                       aria-hidden="true"
                     />
                     <span className="truncate">{item.name}</span>
+                    {item.name === "Comunidade" && (
+                      <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full animate-pulse-soft">
+                        5
+                      </span>
+                    )}
                     {item.name === "Meus Leads" && (
                       <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full animate-pulse-soft">
                         3

@@ -18,6 +18,11 @@ import DashboardSettings from "./pages/Dashboard/Settings";
 import Login from "./pages/Dashboard/Login";
 import Register from "./pages/Dashboard/Register";
 import ForgotPassword from "./pages/Dashboard/ForgotPassword";
+import Community from "./pages/Dashboard/Community";
+import Marketplace from "./pages/Dashboard/Marketplace";
+import Architects from "./pages/Dashboard/Architects";
+import MarketPrices from "./pages/Dashboard/MarketPrices";
+import Consulting from "./pages/Dashboard/Consulting";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +42,11 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="leads" element={<DashboardLeads />} />
+            <Route path="community" element={<Community />} />
+            <Route path="marketplace" element={<Marketplace />} />
+            <Route path="architects" element={<Architects />} />
+            <Route path="market-prices" element={<MarketPrices />} />
+            <Route path="consulting" element={<Consulting />} />
             <Route path="integrations" element={<DashboardIntegrations />} />
             <Route path="plans" element={<DashboardPlans />} />
             <Route path="settings" element={<DashboardSettings />} />
