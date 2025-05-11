@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +27,10 @@ import {
   Filter,
   ChevronDown,
   BarChart4,
-  LineChart
+  LineChart,
+  ZoomIn,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { 
   LineChart as RechartsLineChart,
@@ -41,9 +46,12 @@ import {
   Area,
   AreaChart,
   ComposedChart,
-  Cell
+  Cell,
+  ReferenceArea,
+  ReferenceLine
 } from 'recharts';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTheme } from "@/components/theme-provider";
 
 // Mock data for market prices
 const materials = [
@@ -162,6 +170,7 @@ const priceRanges = [
 
 // Time periods for the chart
 const timePeriods = [
+  { value: "7d", label: "7 dias" },
   { value: "30d", label: "30 dias" },
   { value: "6m", label: "6 meses" },
   { value: "1y", label: "1 ano" }
@@ -185,69 +194,287 @@ const formatCurrency = (value: number) => {
 
 // Custom candlestick chart component
 const CustomCandlestickChart = ({ data, height = 300 }: { data: any[]; height?: number }) => {
+  const { theme } = useTheme();
+  
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="date" />
-        <YAxis />
+        <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#525252' : '#e5e5e5'} />
+        <XAxis 
+          dataKey="date" 
+          stroke={theme === 'dark' ? '#a8a29e' : '#78716c'}
+        />
+        <YAxis 
+          stroke={theme === 'dark' ? '#a8a29e' : '#78716c'}
+          tickFormatter={(value) => `R$${value}`}
+        />
         <RechartsTooltip 
+          contentStyle={{
+            backgroundColor: theme === 'dark' ? '#292524' : 'white',
+            borderColor: theme === 'dark' ? '#525252' : '#e5e5e5',
+            color: theme === 'dark' ? 'white' : 'black'
+          }}
           labelFormatter={(value) => `Data: ${value}`}
-          formatter={(value, name) => {
-            if (name === "high") return [`Máxima: ${formatCurrency(value as number)}`];
-            if (name === "low") return [`Mínima: ${formatCurrency(value as number)}`];
-            if (name === "open") return [`Abertura: ${formatCurrency(value as number)}`];
-            if (name === "close") return [`Fechamento: ${formatCurrency(value as number)}`];
-            return [formatCurrency(value as number), name];
+          formatter={(value: any, name: any) => {
+            if (name === "high") return [`Máxima: ${formatCurrency(value)}`];
+            if (name === "low") return [`Mínima: ${formatCurrency(value)}`];
+            if (name === "open") return [`Abertura: ${formatCurrency(value)}`];
+            if (name === "close") return [`Fechamento: ${formatCurrency(value)}`];
+            return [formatCurrency(value), name];
           }}
         />
         {data.map((entry, index) => (
-          <g key={`candle-${index}`}>
+          <React.Fragment key={`candle-${index}`}>
             {/* Vertical line from high to low */}
-            <line
-              x1={index + 0.5}
-              y1={entry.high}
-              x2={index + 0.5}
-              y2={entry.low}
-              stroke="#8884d8"
+            <ReferenceLine 
+              segment={[
+                { x: entry.date, y: entry.low },
+                { x: entry.date, y: entry.high }
+              ]} 
+              stroke={entry.close >= entry.open ? "#16a34a" : "#dc2626"}
+              strokeWidth={1}
+              ifOverflow="visible"
             />
-            {/* Horizontal box from open to close */}
-            <rect
-              x={index + 0.3}
-              y={Math.min(entry.open, entry.close)}
-              width={0.4}
-              height={Math.abs(entry.close - entry.open)}
-              fill={entry.open > entry.close ? "#ff7675" : "#55efc4"}
+            {/* Rectangle for open to close */}
+            <ReferenceArea
+              x1={parseFloat(index) - 0.25}
+              x2={parseFloat(index) + 0.25}
+              y1={entry.open}
+              y2={entry.close}
+              fill={entry.close >= entry.open ? "#16a34a" : "#dc2626"}
+              fillOpacity={0.8}
+              ifOverflow="visible"
             />
-          </g>
+          </React.Fragment>
         ))}
-        <Bar 
-          dataKey="high" 
-          fill="#55efc4" 
-          opacity={0} 
-          yAxisId={0} 
-        />
-        <Bar 
-          dataKey="low" 
-          fill="#ff7675" 
-          opacity={0} 
-          yAxisId={0} 
-        />
       </ComposedChart>
     </ResponsiveContainer>
   );
 };
 
+// Custom tooltip for recharts
+const CustomTooltip = ({ active, payload, label, theme }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className={`${theme === 'dark' ? 'bg-stone-800 text-white' : 'bg-white text-stone-800'} p-3 rounded-lg shadow-lg border ${theme === 'dark' ? 'border-stone-700' : 'border-stone-200'}`}>
+        <p className="font-medium">{`Data: ${label}`}</p>
+        <p className="text-amber-500 font-medium">{`${formatCurrency(payload[0].value)}`}</p>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+interface ZoomableChartProps {
+  data: any[];
+  type: string;
+  height?: number;
+  isDark: boolean;
+}
+
+const ZoomableChart: React.FC<ZoomableChartProps> = ({ data, type, height = 300, isDark }) => {
+  const [leftIndex, setLeftIndex] = useState<number | null>(null);
+  const [rightIndex, setRightIndex] = useState<number | null>(null);
+  const [refAreaLeft, setRefAreaLeft] = useState<string | null>(null);
+  const [refAreaRight, setRefAreaRight] = useState<string | null>(null);
+  const [displayData, setDisplayData] = useState(data);
+
+  useEffect(() => {
+    setDisplayData(data);
+  }, [data]);
+
+  const getAxisYDomain = (from: number, to: number, ref: string, offset: number) => {
+    const refData = displayData.slice(from, to);
+    let [bottom, top] = [
+      refData[0][ref], 
+      refData[0][ref]
+    ];
+    
+    refData.forEach((d: any) => {
+      if (d[ref] > top) top = d[ref];
+      if (d[ref] < bottom) bottom = d[ref];
+    });
+
+    return [(bottom | 0) - offset, (top | 0) + offset];
+  };
+
+  const zoom = () => {
+    if (refAreaLeft === refAreaRight || !refAreaRight) {
+      setRefAreaLeft(null);
+      setRefAreaRight(null);
+      return;
+    }
+
+    // Ensure leftIndex and rightIndex are set
+    if (leftIndex !== null && rightIndex !== null) {
+      const dataFromIndex = Math.min(leftIndex, rightIndex);
+      const dataToIndex = Math.max(leftIndex, rightIndex);
+
+      setDisplayData(data.slice(dataFromIndex, dataToIndex + 1));
+    }
+
+    setRefAreaLeft(null);
+    setRefAreaRight(null);
+  };
+
+  const handleMouseDown = (e: any) => {
+    if (!e) return;
+    
+    const { activeLabel } = e;
+    setRefAreaLeft(activeLabel);
+    const index = data.findIndex(item => item.date === activeLabel);
+    if (index !== -1) setLeftIndex(index);
+  };
+
+  const handleMouseMove = (e: any) => {
+    if (!e || !refAreaLeft) return;
+    
+    const { activeLabel } = e;
+    setRefAreaRight(activeLabel);
+    const index = data.findIndex(item => item.date === activeLabel);
+    if (index !== -1) setRightIndex(index);
+  };
+  
+  const resetZoom = () => {
+    setDisplayData(data);
+    setRefAreaLeft(null);
+    setRefAreaRight(null);
+    setLeftIndex(null);
+    setRightIndex(null);
+  };
+
+  const renderLineChart = () => (
+    <ResponsiveContainer width="100%" height={height}>
+      <AreaChart
+        data={displayData}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={zoom}
+      >
+        <defs>
+          <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#F9802D" stopOpacity={0.8}/>
+            <stop offset="95%" stopColor="#F9802D" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid 
+          strokeDasharray="3 3" 
+          stroke={isDark ? '#525252' : '#e5e5e5'} 
+        />
+        <XAxis 
+          dataKey="date" 
+          stroke={isDark ? '#a8a29e' : '#78716c'}
+          padding={{ left: 30, right: 30 }}
+        />
+        <YAxis 
+          stroke={isDark ? '#a8a29e' : '#78716c'}
+          tickFormatter={(value) => `R$${value}`} 
+          domain={['auto', 'auto']}
+        />
+        <RechartsTooltip
+          content={<CustomTooltip theme={isDark ? 'dark' : 'light'} />}
+          wrapperStyle={{ zIndex: 1000 }}
+        />
+        <Area
+          type="monotone"
+          dataKey="price"
+          stroke="#F9802D"
+          fillOpacity={1}
+          fill="url(#colorPrice)"
+          strokeWidth={2}
+          dot={{ fill: '#F9802D', r: 4 }}
+          activeDot={{ r: 6, fill: '#F9802D', stroke: isDark ? 'white' : 'black', strokeWidth: 1 }}
+          animationDuration={500}
+          isAnimationActive={true}
+        />
+        {refAreaLeft && refAreaRight ? (
+          <ReferenceArea
+            x1={refAreaLeft}
+            x2={refAreaRight}
+            strokeOpacity={0.3}
+            fill={isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+          />
+        ) : null}
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+
+  const renderBarChart = () => (
+    <ResponsiveContainer width="100%" height={height}>
+      <BarChart
+        data={displayData}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={zoom}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#525252' : '#e5e5e5'} />
+        <XAxis dataKey="date" stroke={isDark ? '#a8a29e' : '#78716c'} />
+        <YAxis stroke={isDark ? '#a8a29e' : '#78716c'} tickFormatter={(value) => `R$${value}`} />
+        <RechartsTooltip
+          content={<CustomTooltip theme={isDark ? 'dark' : 'light'} />}
+          wrapperStyle={{ zIndex: 1000 }}
+        />
+        <Bar 
+          dataKey="price" 
+          fill="#F9802D" 
+          radius={[4, 4, 0, 0]}
+          animationDuration={500}
+        >
+          {displayData.map((entry, index) => (
+            <Cell 
+              key={`cell-${index}`}
+              fill={index === displayData.length - 1 ? '#F9802D' : '#FFB57A'}
+            />
+          ))}
+        </Bar>
+        {refAreaLeft && refAreaRight ? (
+          <ReferenceArea
+            x1={refAreaLeft}
+            x2={refAreaRight}
+            strokeOpacity={0.3}
+            fill={isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
+          />
+        ) : null}
+      </BarChart>
+    </ResponsiveContainer>
+  );
+
+  return (
+    <div className="relative">
+      {type === 'line' && renderLineChart()}
+      {type === 'bar' && renderBarChart()}
+      {type === 'candle' && <CustomCandlestickChart data={displayData} height={height} />}
+      
+      {displayData.length < data.length && (
+        <Button 
+          variant="outline" 
+          size="sm"
+          className="absolute top-2 right-2 opacity-80 hover:opacity-100 z-10"
+          onClick={resetZoom}
+        >
+          <ZoomIn className="h-4 w-4 mr-1" />
+          Resetar Zoom
+        </Button>
+      )}
+    </div>
+  );
+};
+
 const MarketPrices = () => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [materialFilter, setMaterialFilter] = useState("all");
   const [originFilter, setOriginFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [timePeriod, setTimePeriod] = useState("6m");
   const [selectedMaterial, setSelectedMaterial] = useState(materials[0]);
-  const [theme, setTheme] = useState<"light" | "dark">("light");
   const [chartType, setChartType] = useState("line");
   const [dataLoaded, setDataLoaded] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [materialSearchValue, setMaterialSearchValue] = useState("");
   
   const filteredMaterials = materials.filter(material => {
     // Search filter
@@ -309,108 +536,48 @@ const MarketPrices = () => {
       return (
         <div className="flex items-center justify-center h-72 bg-stone-50 dark:bg-stone-800/30 rounded-lg">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+            <Loader2 className="inline-block animate-spin h-12 w-12 text-amber-500 mb-4" />
             <p className="text-stone-500 dark:text-stone-400">Carregando dados do mercado...</p>
           </div>
         </div>
       );
     }
 
-    switch (chartType) {
-      case 'line':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart
-              data={selectedMaterial.priceHistory}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <defs>
-                <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F9802D" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#F9802D" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke={theme === 'dark' ? '#525252' : '#e5e5e5'} 
-              />
-              <XAxis 
-                dataKey="date" 
-                stroke={theme === 'dark' ? '#a8a29e' : '#78716c'}
-              />
-              <YAxis 
-                stroke={theme === 'dark' ? '#a8a29e' : '#78716c'}
-                tickFormatter={(value) => `R$${value}`} 
-              />
-              <RechartsTooltip
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#292524' : 'white',
-                  borderColor: theme === 'dark' ? '#525252' : '#e5e5e5',
-                  color: theme === 'dark' ? 'white' : 'black'
-                }}
-                formatter={(value: number) => [formatCurrency(value), "Preço"]}
-              />
-              <Area
-                type="monotone"
-                dataKey="price"
-                stroke="#F9802D"
-                fillOpacity={1}
-                fill="url(#colorPrice)"
-                strokeWidth={2}
-                dot={{ fill: '#F9802D', r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-      case 'bar':
-        return (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={selectedMaterial.priceHistory}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#525252' : '#e5e5e5'} />
-              <XAxis dataKey="date" stroke={theme === 'dark' ? '#a8a29e' : '#78716c'} />
-              <YAxis stroke={theme === 'dark' ? '#a8a29e' : '#78716c'} tickFormatter={(value) => `R$${value}`} />
-              <RechartsTooltip
-                contentStyle={{
-                  backgroundColor: theme === 'dark' ? '#292524' : 'white',
-                  borderColor: theme === 'dark' ? '#525252' : '#e5e5e5',
-                  color: theme === 'dark' ? 'white' : 'black'
-                }}
-                formatter={(value: number) => [formatCurrency(value), "Preço"]}
-              />
-              <Bar dataKey="price" fill="#F9802D" radius={[4, 4, 0, 0]}>
-                {selectedMaterial.priceHistory.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`}
-                    fill={index === selectedMaterial.priceHistory.length - 1 ? '#F9802D' : '#FFB57A'}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      case 'candle':
-        return <CustomCandlestickChart data={selectedMaterial.priceHistory} />;
-      default:
-        return null;
+    if (selectedMaterial.priceHistory.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-72 bg-stone-50 dark:bg-stone-800/30 rounded-lg">
+          <Info className="h-12 w-12 text-stone-400 dark:text-stone-500 mb-2" />
+          <p className="text-lg font-medium text-stone-700 dark:text-stone-300 mb-1">Sem dados disponíveis</p>
+          <p className="text-stone-500 dark:text-stone-400 mb-4 text-center max-w-md">
+            Não há dados históricos suficientes para exibir o gráfico deste material neste momento.
+          </p>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={reloadData}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Verificar novamente
+          </Button>
+        </div>
+      );
     }
+
+    return (
+      <ZoomableChart 
+        data={selectedMaterial.priceHistory} 
+        type={chartType} 
+        height={340}
+        isDark={isDark}
+      />
+    );
   };
 
+  const selectMaterialTrigger = useRef<HTMLButtonElement>(null);
+
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
       <div className="space-y-6">
         <motion.div 
           initial={{ y: -20, opacity: 0 }}
@@ -424,7 +591,7 @@ const MarketPrices = () => {
           </div>
         </motion.div>
 
-        <Card>
+        <Card className="overflow-hidden border-stone-200 dark:border-stone-800">
           <CardHeader className="pb-2">
             <CardTitle>Evolução de Preços</CardTitle>
             <CardDescription>
@@ -433,36 +600,69 @@ const MarketPrices = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1">
-                  <label className="text-sm font-medium mb-1 block">Material</label>
-                  <Select 
-                    value={selectedMaterial.id.toString()} 
-                    onValueChange={(value) => {
-                      const material = materials.find(m => m.id.toString() === value);
-                      if (material) setSelectedMaterial(material);
-                    }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione um material" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {materials.map((material) => (
-                        <SelectItem key={material.id} value={material.id.toString()}>
-                          {material.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="text-sm font-medium mb-1 block text-stone-700 dark:text-stone-300">Material</label>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        ref={selectMaterialTrigger}
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full justify-between bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800"
+                      >
+                        {selectedMaterial ? selectedMaterial.name : "Selecione um material"}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" style={{ width: selectMaterialTrigger.current?.offsetWidth }}>
+                      <Command>
+                        <CommandInput 
+                          placeholder="Buscar material..." 
+                          className="h-9"
+                          value={materialSearchValue}
+                          onValueChange={setMaterialSearchValue}
+                        />
+                        <CommandEmpty>Nenhum material encontrado.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-auto">
+                          {materials
+                            .filter(material => material.name.toLowerCase().includes(materialSearchValue.toLowerCase()))
+                            .map((material) => (
+                              <CommandItem
+                                key={material.id}
+                                value={material.name}
+                                onSelect={() => {
+                                  setSelectedMaterial(material);
+                                  setMaterialSearchValue("");
+                                  setOpen(false);
+                                }}
+                                className="flex items-center justify-between"
+                              >
+                                <div>
+                                  <span>{material.name}</span>
+                                  <span className="ml-2 text-xs text-stone-500 dark:text-stone-400">
+                                    {material.category.charAt(0).toUpperCase() + material.category.slice(1)}
+                                  </span>
+                                </div>
+                                <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                                  {formatCurrency(material.priceM2)}
+                                </span>
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 
-                <div className="w-full sm:w-48">
-                  <label className="text-sm font-medium mb-1 block">Período</label>
+                <div className="w-full lg:w-48">
+                  <label className="text-sm font-medium mb-1 block text-stone-700 dark:text-stone-300">Período</label>
                   <Select 
                     value={timePeriod}
                     onValueChange={setTimePeriod}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800">
                       <SelectValue placeholder="Período" />
                     </SelectTrigger>
                     <SelectContent>
@@ -475,32 +675,32 @@ const MarketPrices = () => {
                   </Select>
                 </div>
                 
-                <div className="w-full sm:w-48">
-                  <label className="text-sm font-medium mb-1 block">Tipo de gráfico</label>
+                <div className="w-full lg:w-auto">
+                  <label className="text-sm font-medium mb-1 block text-stone-700 dark:text-stone-300">Tipo de gráfico</label>
                   <div className="flex rounded-md overflow-hidden border border-stone-200 dark:border-stone-800">
                     {chartTypes.map((type) => (
                       <button
                         key={type.value}
-                        className={`flex-1 flex items-center justify-center py-2 text-sm ${
+                        className={`flex-1 flex items-center justify-center py-2 px-3 text-sm transition-colors ${
                           chartType === type.value
                             ? "bg-amber-500 text-white"
                             : "bg-white dark:bg-stone-950 text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-900"
                         }`}
                         onClick={() => setChartType(type.value)}
                       >
-                        <type.icon className="h-4 w-4 mr-1" />
-                        {type.value === 'candle' ? 'Candle' : type.value === 'bar' ? 'Barras' : 'Linha'}
+                        <type.icon className="h-4 w-4 mr-1.5" />
+                        {type.label}
                       </button>
                     ))}
                   </div>
                 </div>
               </div>
               
-              <div className="bg-white dark:bg-stone-950 rounded-lg p-4 border border-stone-100 dark:border-stone-800">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-white dark:bg-stone-950 rounded-lg p-4 border border-stone-100 dark:border-stone-800 transition-all">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
                   <div>
                     <h3 className="text-lg font-medium text-stone-800 dark:text-stone-200">{selectedMaterial.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
                       <Badge variant="outline" className="text-stone-600 dark:text-stone-400 border-stone-200 dark:border-stone-700">
                         {selectedMaterial.category.charAt(0).toUpperCase() + selectedMaterial.category.slice(1)}
                       </Badge>
@@ -519,7 +719,7 @@ const MarketPrices = () => {
                         ? "text-green-600 dark:text-green-500" 
                         : selectedMaterial.trend === "down" 
                         ? "text-red-600 dark:text-red-500"
-                        : "text-amber-600 dark:text-amber-500"
+                        : "text-amber-600 dark:text-amber-400"
                     }`}>
                       {selectedMaterial.trend === "up" ? (
                         <ArrowUpRight className="h-4 w-4 mr-1" />
@@ -534,18 +734,30 @@ const MarketPrices = () => {
                   </div>
                 </div>
                 
-                {renderChart()}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`chart-${selectedMaterial.id}-${chartType}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {renderChart()}
+                  </motion.div>
+                </AnimatePresence>
                 
-                <div className="mt-2 text-xs text-stone-500 dark:text-stone-400 flex items-center">
-                  <Info className="h-3 w-3 mr-1" />
-                  Dados coletados automaticamente de marketplaces, sites especializados e redes do setor via crawling e IA proprietária.
+                <div className="mt-3 text-xs text-stone-500 dark:text-stone-400 flex items-center">
+                  <Info className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <span className="italic">
+                    Dados coletados automaticamente de marketplaces, sites especializados e redes do setor via crawling e IA proprietária.
+                  </span>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="overflow-hidden border-stone-200 dark:border-stone-800">
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
@@ -554,7 +766,7 @@ const MarketPrices = () => {
                   Compare os preços e tendências de diferentes tipos de rochas ornamentais
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-col sm:flex-row">
                 <div className="relative w-full sm:w-60">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-stone-500" />
                   <Input
@@ -562,12 +774,12 @@ const MarketPrices = () => {
                     placeholder="Buscar material..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
+                    className="pl-9 bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800"
                   />
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
+                    <Button variant="outline" className="flex items-center gap-2 bg-white dark:bg-stone-950 border-stone-200 dark:border-stone-800">
                       <Filter className="h-4 w-4" />
                       Filtros
                       <ChevronDown className="h-4 w-4" />
@@ -657,42 +869,70 @@ const MarketPrices = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMaterials.map((material) => (
-                    <tr key={material.id} className="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-900/40 cursor-pointer transition-colors" onClick={() => setSelectedMaterial(material)}>
-                      <td className="p-4 font-medium">{material.name}</td>
-                      <td className="p-4">{material.category.charAt(0).toUpperCase() + material.category.slice(1)}</td>
-                      <td className="p-4">{material.origin}</td>
-                      <td className="p-4 text-right font-medium">{formatCurrency(material.priceM2)}</td>
-                      <td className={`p-4 text-right ${
-                        material.percentChange > 0 
-                          ? "text-green-600 dark:text-green-500" 
-                          : material.percentChange < 0 
-                          ? "text-red-600 dark:text-red-500"
-                          : "text-amber-600 dark:text-amber-500"
-                      }`}>
-                        {material.percentChange > 0 ? "+" : ""}
-                        {material.percentChange.toFixed(1)}%
-                      </td>
-                      <td className="p-4 text-right">
-                        {material.trend === "up" ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/30">
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                            Alta
-                          </Badge>
-                        ) : material.trend === "down" ? (
-                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30">
-                            <TrendingDown className="h-3 w-3 mr-1" />
-                            Queda
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30">
-                            <TrendingUp className="h-3 w-3 mr-1" />
-                            Estável
-                          </Badge>
-                        )}
+                  {filteredMaterials.length > 0 ? (
+                    filteredMaterials.map((material) => (
+                      <tr 
+                        key={material.id} 
+                        className="border-b border-stone-100 dark:border-stone-800 hover:bg-stone-50 dark:hover:bg-stone-900/40 cursor-pointer transition-colors" 
+                        onClick={() => setSelectedMaterial(material)}
+                      >
+                        <td className="p-4 font-medium">{material.name}</td>
+                        <td className="p-4">{material.category.charAt(0).toUpperCase() + material.category.slice(1)}</td>
+                        <td className="p-4">{material.origin}</td>
+                        <td className="p-4 text-right font-medium">{formatCurrency(material.priceM2)}</td>
+                        <td className={`p-4 text-right ${
+                          material.percentChange > 0 
+                            ? "text-green-600 dark:text-green-500" 
+                            : material.percentChange < 0 
+                            ? "text-red-600 dark:text-red-500"
+                            : "text-amber-600 dark:text-amber-500"
+                        }`}>
+                          {material.percentChange > 0 ? "+" : ""}
+                          {material.percentChange.toFixed(1)}%
+                        </td>
+                        <td className="p-4 text-right">
+                          {material.trend === "up" ? (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800/30">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Alta
+                            </Badge>
+                          ) : material.trend === "down" ? (
+                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/30">
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              Queda
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30">
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Estável
+                            </Badge>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-stone-500 dark:text-stone-400">
+                        <div className="flex flex-col items-center">
+                          <Search className="h-8 w-8 mb-2 text-stone-400 dark:text-stone-500" />
+                          <p>Nenhum material encontrado com esses filtros.</p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="mt-2"
+                            onClick={() => {
+                              setSearchTerm("");
+                              setMaterialFilter("all");
+                              setOriginFilter("all");
+                              setPriceFilter("all");
+                            }}
+                          >
+                            Limpar filtros
+                          </Button>
+                        </div>
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
