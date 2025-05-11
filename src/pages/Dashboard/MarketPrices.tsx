@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -390,8 +389,8 @@ const ZoomableChart: React.FC<ZoomableChartProps> = ({ data, type, height = 300,
         />
         {refAreaLeft && refAreaRight ? (
           <ReferenceArea
-            x1={refAreaLeft}
-            x2={refAreaRight}
+            x1={String(refAreaLeft)}
+            x2={String(refAreaRight)}
             strokeOpacity={0.3}
             fill={isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
           />
@@ -430,8 +429,8 @@ const ZoomableChart: React.FC<ZoomableChartProps> = ({ data, type, height = 300,
         </Bar>
         {refAreaLeft && refAreaRight ? (
           <ReferenceArea
-            x1={refAreaLeft}
-            x2={refAreaRight}
+            x1={String(refAreaLeft)}
+            x2={String(refAreaRight)}
             strokeOpacity={0.3}
             fill={isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}
           />

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ interface LeadDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   leadId?: string | number;
+  lead?: any; // Adicionando suporte para passar o objeto lead diretamente
 }
 
 interface LeadDetail {
@@ -92,21 +92,75 @@ const createDemoLead = (id: string | number): LeadDetail => {
   };
 };
 
-export function LeadDetailsModal({ isOpen, onClose, leadId }: LeadDetailsModalProps) {
+// Função para mapear dados de lead recebidos para o formato interno
+const mapLeadToLeadDetail = (lead: any): LeadDetail => {
+  // Se o lead já tem um nome, presumimos que está no formato da página Leads
+  if (lead.company) {
+    return {
+      id: lead.id,
+      name: lead.company,
+      email: lead.email || "",
+      phone: lead.phone || "",
+      source: lead.source || lead.industry || "",
+      status: mapStatusToInternal(lead.status),
+      value: lead.value || 0,
+      date: lead.date || new Date().toISOString().split('T')[0],
+      notes: lead.notes || lead.lastProject || "",
+      interactions: [],
+      documents: [],
+      materials: lead.recentPurchases ? 
+        lead.recentPurchases.map((purchase: string) => {
+          const parts = purchase.split(' (');
+          return {
+            name: parts[0],
+            quantity: parts[1] ? parts[1].replace(')', '') : "",
+            date: ""
+          };
+        }) : [],
+    };
+  }
+  
+  // Caso contrário, retornamos um lead demo
+  return createDemoLead(lead.id);
+};
+
+// Função para mapear status externo para o formato interno
+const mapStatusToInternal = (status?: string): 'novo' | 'contatado' | 'qualificado' | 'negociação' | 'fechado' => {
+  if (!status) return 'novo';
+  
+  switch (status.toLowerCase()) {
+    case 'new': return 'novo';
+    case 'contacted': return 'contatado';
+    case 'closed': return 'fechado';
+    case 'lost': return 'qualificado'; // Mapeando 'lost' para 'qualificado' por falta de equivalente
+    default: return 'novo';
+  }
+};
+
+export function LeadDetailsModal({ isOpen, onClose, leadId, lead }: LeadDetailsModalProps) {
   const [leadData, setLeadData] = useState<LeadDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isOpen && leadId) {
+    if (isOpen) {
       setIsLoading(true);
-      // Simulando carregamento de dados
-      setTimeout(() => {
-        // Em uma implementação real, aqui seria feita uma chamada à API
-        setLeadData(createDemoLead(leadId));
-        setIsLoading(false);
-      }, 800);
+      
+      // Se temos o lead completo, usamos ele diretamente
+      if (lead) {
+        setTimeout(() => {
+          setLeadData(mapLeadToLeadDetail(lead));
+          setIsLoading(false);
+        }, 800);
+      }
+      // Caso contrário, se temos apenas o ID, buscamos os dados
+      else if (leadId) {
+        setTimeout(() => {
+          setLeadData(createDemoLead(leadId));
+          setIsLoading(false);
+        }, 800);
+      }
     }
-  }, [isOpen, leadId]);
+  }, [isOpen, leadId, lead]);
 
   // Cores por status
   const statusColors: Record<string, string> = {
@@ -209,17 +263,23 @@ export function LeadDetailsModal({ isOpen, onClose, leadId }: LeadDetailsModalPr
                     transition={{ duration: 0.2 }}
                   >
                     <ul className="space-y-3">
-                      {leadData.interactions.map((interaction, idx) => (
-                        <li key={idx} className="border rounded-lg p-4 bg-white dark:bg-stone-950 dark:border-stone-800">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between mb-1">
-                            <h3 className="font-medium">{interaction.type}</h3>
-                            <Badge variant="outline" className="w-fit dark:border-stone-700">
-                              {formatDate(interaction.date)}
-                            </Badge>
-                          </div>
-                          <p className="text-stone-700 dark:text-stone-300">{interaction.description}</p>
+                      {leadData.interactions.length > 0 ? (
+                        leadData.interactions.map((interaction, idx) => (
+                          <li key={idx} className="border rounded-lg p-4 bg-white dark:bg-stone-950 dark:border-stone-800">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-between mb-1">
+                              <h3 className="font-medium">{interaction.type}</h3>
+                              <Badge variant="outline" className="w-fit dark:border-stone-700">
+                                {formatDate(interaction.date)}
+                              </Badge>
+                            </div>
+                            <p className="text-stone-700 dark:text-stone-300">{interaction.description}</p>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-center py-8 text-stone-500">
+                          Nenhuma interação registrada para este lead.
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </motion.div>
                 </TabsContent>
@@ -231,20 +291,26 @@ export function LeadDetailsModal({ isOpen, onClose, leadId }: LeadDetailsModalPr
                     transition={{ duration: 0.2 }}
                   >
                     <ul className="space-y-2">
-                      {leadData.documents.map((doc, idx) => (
-                        <li key={idx} className="border rounded-lg p-3 flex items-center justify-between bg-white dark:bg-stone-950 dark:border-stone-800">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-                              {doc.type}
+                      {leadData.documents.length > 0 ? (
+                        leadData.documents.map((doc, idx) => (
+                          <li key={idx} className="border rounded-lg p-3 flex items-center justify-between bg-white dark:bg-stone-950 dark:border-stone-800">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-md bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                                {doc.type}
+                              </div>
+                              <span>{doc.name}</span>
                             </div>
-                            <span>{doc.name}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-stone-500 dark:text-stone-400">{formatDate(doc.date)}</span>
-                            <Button variant="outline" size="sm">Ver</Button>
-                          </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-stone-500 dark:text-stone-400">{formatDate(doc.date)}</span>
+                              <Button variant="outline" size="sm">Ver</Button>
+                            </div>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="text-center py-8 text-stone-500">
+                          Nenhum documento disponível para este lead.
                         </li>
-                      ))}
+                      )}
                     </ul>
                   </motion.div>
                 </TabsContent>
@@ -264,12 +330,20 @@ export function LeadDetailsModal({ isOpen, onClose, leadId }: LeadDetailsModalPr
                           </tr>
                         </thead>
                         <tbody>
-                          {leadData.materials.map((material, idx) => (
-                            <tr key={idx} className={`border-b dark:border-stone-800 ${idx % 2 === 0 ? 'bg-white dark:bg-stone-950' : 'bg-stone-50 dark:bg-stone-900/20'}`}>
-                              <td className="p-3">{material.name}</td>
-                              <td className="p-3 text-right">{material.quantity}</td>
+                          {leadData.materials.length > 0 ? (
+                            leadData.materials.map((material, idx) => (
+                              <tr key={idx} className={`border-b dark:border-stone-800 ${idx % 2 === 0 ? 'bg-white dark:bg-stone-950' : 'bg-stone-50 dark:bg-stone-900/20'}`}>
+                                <td className="p-3">{material.name}</td>
+                                <td className="p-3 text-right">{material.quantity}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={2} className="text-center py-8 text-stone-500">
+                                Nenhum material registrado para este lead.
+                              </td>
                             </tr>
-                          ))}
+                          )}
                         </tbody>
                       </table>
                     </div>
