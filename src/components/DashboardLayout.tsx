@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
@@ -18,7 +17,7 @@ import {
   Briefcase,
   TrendingUp,
   Info,
-  LayoutKanban
+  KanbanSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -63,7 +62,7 @@ const DashboardLayout: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Meus Leads', href: '/dashboard/leads', icon: Users },
-    { name: 'Funil de Leads', href: '/dashboard/funnel', icon: LayoutKanban },
+    { name: 'Funil de Leads', href: '/dashboard/funnel', icon: KanbanSquare },
     { name: 'Marketplace', href: '/dashboard/marketplace', icon: Store },
     { name: 'Arquitetos', href: '/dashboard/architects', icon: Briefcase },
     { name: 'Preço do Mercado', href: '/dashboard/market-prices', icon: TrendingUp },

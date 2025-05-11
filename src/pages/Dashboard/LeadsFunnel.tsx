@@ -1,10 +1,6 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { restrictToVerticalAxis, restrictToWindowEdges } from '@dnd-kit/modifiers';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -16,10 +12,11 @@ import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Plus, Edit, Trash2, MoreHorizontal, User, Building, DollarSign, Package, Clock, PlusCircle, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, MoreHorizontal, User, DollarSign, Package, Clock, PlusCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
-// Definição de tipos
+// Types
 type Tag = {
   id: string;
   name: string;
@@ -41,7 +38,7 @@ type Column = {
   items: Lead[];
 };
 
-// Mock data para leads
+// Sample data for leads
 const initialData: Column[] = [
   {
     id: 'new',
@@ -123,40 +120,47 @@ const initialData: Column[] = [
   }
 ];
 
-// Componentes auxiliares
-const SortableItem = ({ lead }: { lead: Lead }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: lead.id,
-  });
-  
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="mb-3 cursor-grab"
-    >
-      <LeadCard lead={lead} />
-    </div>
-  );
-};
-
-const LeadCard = ({ lead }: { lead: Lead }) => {
+// Lead card component
+const LeadCard = ({ lead, onMoveToColumn }: { lead: Lead; onMoveToColumn: (leadId: string, columnId: string) => void }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showContextMenu, setShowContextMenu] = useState(false);
+  const { toast } = useToast();
+  
+  const handleMove = (columnId: string) => {
+    onMoveToColumn(lead.id, columnId);
+    setShowContextMenu(false);
+    toast({
+      title: "Lead movido",
+      description: `O lead foi movido com sucesso para ${columnId}`,
+    });
+  };
   
   return (
     <>
-      <Card className="bg-white dark:bg-stone-800 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="mb-3 bg-white dark:bg-stone-800 shadow-sm hover:shadow-md transition-shadow">
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
             <h3 className="font-medium text-stone-900 dark:text-stone-100">{lead.company}</h3>
-            <MoreHorizontal className="h-5 w-5 text-stone-400 cursor-pointer" />
+            <div className="relative">
+              <MoreHorizontal 
+                className="h-5 w-5 text-stone-400 cursor-pointer" 
+                onClick={() => setShowContextMenu(!showContextMenu)}
+              />
+              {showContextMenu && (
+                <div className="absolute right-0 top-6 z-10 bg-white dark:bg-stone-800 rounded-md shadow-lg border border-stone-100 dark:border-stone-700 py-1 min-w-[160px]">
+                  <p className="px-3 py-1 text-xs font-semibold text-stone-500 dark:text-stone-400">Mover para:</p>
+                  {initialData.map(column => (
+                    <button
+                      key={column.id}
+                      className="w-full text-left px-3 py-1 text-sm hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors"
+                      onClick={() => handleMove(column.id)}
+                    >
+                      {column.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="pb-2">
@@ -258,8 +262,6 @@ const LeadCard = ({ lead }: { lead: Lead }) => {
 
 const LeadFunnelPage = () => {
   const [columns, setColumns] = useState<Column[]>(initialData);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [isAddingLead, setIsAddingLead] = useState(false);
@@ -271,103 +273,9 @@ const LeadFunnelPage = () => {
     tags: []
   });
   const [newLeadColumn, setNewLeadColumn] = useState('');
+  const { toast } = useToast();
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
-  // Handler para início de arrastar
-  function handleDragStart(event: DragStartEvent) {
-    const { active } = event;
-    setActiveId(active.id as string);
-    
-    // Identifica a coluna do item
-    const columnId = columns.find(col => 
-      col.items.some(item => item.id === active.id)
-    )?.id || null;
-    
-    setActiveColumn(columnId);
-  }
-
-  // Handler para final de arrastar
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    
-    if (over) {
-      // Identifica as colunas de origem e destino
-      let sourceColumnId = '';
-      let destinationColumnId = '';
-      let sourceIndex = -1;
-      let destinationIndex = -1;
-      
-      columns.forEach(column => {
-        const sourceItemIndex = column.items.findIndex(item => item.id === active.id);
-        if (sourceItemIndex >= 0) {
-          sourceColumnId = column.id;
-          sourceIndex = sourceItemIndex;
-        }
-        
-        const overItemIndex = column.items.findIndex(item => item.id === over.id);
-        if (overItemIndex >= 0) {
-          destinationColumnId = column.id;
-          destinationIndex = overItemIndex;
-        }
-      });
-      
-      // Se o item estiver sendo movido dentro da mesma coluna
-      if (sourceColumnId === destinationColumnId && sourceIndex !== -1 && destinationIndex !== -1) {
-        const newColumns = [...columns];
-        const columnIndex = newColumns.findIndex(col => col.id === sourceColumnId);
-        
-        newColumns[columnIndex].items = arrayMove(
-          newColumns[columnIndex].items,
-          sourceIndex,
-          destinationIndex
-        );
-        
-        setColumns(newColumns);
-      } 
-      // Se o item estiver sendo movido entre colunas
-      else if (sourceColumnId && destinationColumnId) {
-        const newColumns = [...columns];
-        const sourceColIndex = newColumns.findIndex(col => col.id === sourceColumnId);
-        const destColIndex = newColumns.findIndex(col => col.id === destinationColumnId);
-        
-        const [movedItem] = newColumns[sourceColIndex].items.splice(sourceIndex, 1);
-        newColumns[destColIndex].items.splice(destinationIndex, 0, movedItem);
-        
-        setColumns(newColumns);
-      }
-      // Se o item estiver sendo movido para uma coluna vazia
-      else if (sourceColumnId && over.id) {
-        const columnId = over.id as string;
-        const isColumn = columns.some(col => col.id === columnId);
-        
-        if (isColumn) {
-          const newColumns = [...columns];
-          const sourceColIndex = newColumns.findIndex(col => col.id === sourceColumnId);
-          const destColIndex = newColumns.findIndex(col => col.id === columnId);
-          
-          const [movedItem] = newColumns[sourceColIndex].items.splice(sourceIndex, 1);
-          newColumns[destColIndex].items.push(movedItem);
-          
-          setColumns(newColumns);
-        }
-      }
-    }
-    
-    setActiveId(null);
-    setActiveColumn(null);
-  }
-
-  // Adicionar uma nova coluna
+  // Add a new column
   const handleAddColumn = () => {
     if (newColumnTitle.trim()) {
       const newColumn: Column = {
@@ -379,10 +287,15 @@ const LeadFunnelPage = () => {
       setColumns([...columns, newColumn]);
       setNewColumnTitle('');
       setIsAddingColumn(false);
+      
+      toast({
+        title: "Etapa adicionada",
+        description: "Nova etapa adicionada com sucesso ao funil",
+      });
     }
   };
 
-  // Adicionar um novo lead
+  // Add a new lead
   const handleAddLead = () => {
     if (newLead.company && newLeadColumn) {
       const lead: Lead = {
@@ -411,13 +324,51 @@ const LeadFunnelPage = () => {
       });
       setNewLeadColumn('');
       setIsAddingLead(false);
+      
+      toast({
+        title: "Lead adicionado",
+        description: "Novo lead adicionado com sucesso",
+      });
     }
   };
 
-  // Encontrar o lead ativo
-  const activeLead = activeId ? columns
-    .flatMap(column => column.items)
-    .find(item => item.id === activeId) : null;
+  // Move lead from one column to another
+  const moveLead = (leadId: string, targetColumnId: string) => {
+    // Find the column that contains the lead
+    let sourceColumnId = '';
+    let leadToMove: Lead | null = null;
+    
+    for (const column of columns) {
+      const lead = column.items.find(item => item.id === leadId);
+      if (lead) {
+        sourceColumnId = column.id;
+        leadToMove = lead;
+        break;
+      }
+    }
+    
+    if (!sourceColumnId || !leadToMove || sourceColumnId === targetColumnId) return;
+    
+    const updatedColumns = columns.map(column => {
+      // Remove from source column
+      if (column.id === sourceColumnId) {
+        return {
+          ...column,
+          items: column.items.filter(item => item.id !== leadId)
+        };
+      }
+      // Add to target column
+      if (column.id === targetColumnId) {
+        return {
+          ...column,
+          items: [...column.items, leadToMove!]
+        };
+      }
+      return column;
+    });
+    
+    setColumns(updatedColumns);
+  };
 
   return (
     <div className="space-y-6">
@@ -547,48 +498,29 @@ const LeadFunnelPage = () => {
 
       <div className="overflow-x-auto pb-6">
         <div className="min-w-[900px]">
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
-          >
-            <div className="grid grid-cols-5 gap-4">
-              {columns.map((column) => (
-                <div
-                  key={column.id}
-                  className="bg-stone-100 dark:bg-stone-900/60 p-4 rounded-lg"
-                >
-                  <h3 className="font-medium text-stone-900 dark:text-stone-100 mb-4 flex items-center justify-between">
-                    <span>{column.title}</span>
-                    <Badge variant="secondary" className="ml-2">
-                      {column.items.length}
-                    </Badge>
-                  </h3>
-                  
-                  <SortableContext
-                    items={column.items.map((item) => item.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="min-h-[200px]">
-                      {column.items.map((item) => (
-                        <SortableItem key={item.id} lead={item} />
-                      ))}
+          <div className="grid grid-cols-5 gap-4">
+            {columns.map((column) => (
+              <div
+                key={column.id}
+                className="bg-stone-100 dark:bg-stone-900/60 p-4 rounded-lg"
+              >
+                <h3 className="font-medium text-stone-900 dark:text-stone-100 mb-4 flex items-center justify-between">
+                  <span>{column.title}</span>
+                  <Badge variant="secondary" className="ml-2">
+                    {column.items.length}
+                  </Badge>
+                </h3>
+                
+                <div className="min-h-[200px]">
+                  {column.items.map((item) => (
+                    <div key={item.id}>
+                      <LeadCard lead={item} onMoveToColumn={moveLead} />
                     </div>
-                  </SortableContext>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            <DragOverlay>
-              {activeId && activeLead ? (
-                <div className="opacity-80">
-                  <LeadCard lead={activeLead} />
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
