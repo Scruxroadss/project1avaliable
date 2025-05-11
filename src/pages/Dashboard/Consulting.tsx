@@ -3,499 +3,447 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Check, Calendar, Info, PieChart, Users, TrendingUp, Zap, BarChart3, Building, MessageCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Brain, 
+  Users, 
+  LineChart, 
+  PieChart, 
+  Smartphone, 
+  Trophy, 
+  Check, 
+  ChevronRight, 
+  Calendar,
+  ArrowUpRight,
+  User2
+} from "lucide-react";
 
-const Consulting = () => {
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
+const Consulting: React.FC = () => {
+  const { toast } = useToast();
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Solicitação enviada",
+      description: "Nossa equipe entrará em contato em até 24 horas úteis.",
+    });
+  };
+
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
     visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.1,
+      opacity: 1, 
+      y: 0,
+      transition: {
         duration: 0.5
       }
     }
   };
-  
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0,
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
       opacity: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 100 
+      transition: {
+        staggerChildren: 0.1
       }
     }
   };
 
   return (
-    <div className="container mx-auto">
+    <div className="space-y-8">
       <motion.div
-        variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-8"
+        variants={fadeIn}
       >
-        {/* Header Section */}
-        <motion.div variants={itemVariants} className="text-center max-w-3xl mx-auto mb-8">
-          <Badge className="mb-4" variant="outline">Premium</Badge>
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-amber-600 to-amber-500 bg-clip-text text-transparent">
-            Consultoria Especializada
-          </h1>
-          <p className="text-xl text-stone-600 max-w-2xl mx-auto">
-            Transforme seu negócio com nossa consultoria personalizada exclusiva para empresas do setor de rochas ornamentais
-          </p>
-        </motion.div>
+        <h1 className="text-3xl font-bold tracking-tight dark:text-white">Consultoria Especializada</h1>
+        <p className="text-stone-600 dark:text-stone-400 mt-1">
+          Acelere seu crescimento com nossa consultoria personalizada para empresas do setor de rochas ornamentais
+        </p>
+      </motion.div>
 
-        {/* Main Value Proposition */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-none bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-            <CardHeader>
-              <CardTitle className="text-2xl">Seu parceiro estratégico para crescimento acelerado</CardTitle>
-              <CardDescription className="text-white/90">
-                Consultoria premium com foco em resultados concretos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>
-                Nossa consultoria especializada oferece diagnóstico personalizado, implementação de melhorias e acompanhamento contínuo para empresas do setor de rochas ornamentais que desejam elevar seu patamar de vendas e operações.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3">
-                <div className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-white bg-amber-600 rounded-full p-1" />
-                  <span>Aumento médio de 34% em vendas</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Coluna principal */}
+        <motion.div 
+          className="lg:col-span-2 space-y-8"
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
+          {/* Hero card */}
+          <motion.div variants={fadeIn}>
+            <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-r from-amber-50 to-stone-50 dark:from-stone-900 dark:to-stone-950 dark:border-stone-800">
+              <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 items-center">
+                <div className="flex-1 space-y-4">
+                  <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400">Exclusivo Plano Expansão Total</Badge>
+                  <h2 className="text-2xl font-bold dark:text-white">Transforme sua estratégia de vendas com especialistas do setor</h2>
+                  <p className="text-stone-600 dark:text-stone-400">
+                    Nossa consultoria premium oferece um diagnóstico completo e plano de ação personalizado para 
+                    aumentar suas vendas e melhorar processos internos.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button className="bg-amber-500 hover:bg-amber-600 text-stone-900">
+                      Agendar diagnóstico inicial
+                      <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" className="dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+                      Conhecer mais
+                    </Button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-white bg-amber-600 rounded-full p-1" />
-                  <span>Otimização de processos internos</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-white bg-amber-600 rounded-full p-1" />
-                  <span>Capacitação personalizada da equipe</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-5 w-5 text-white bg-amber-600 rounded-full p-1" />
-                  <span>Implementação de tecnologia comercial</span>
+                <div className="flex-shrink-0 w-full md:w-1/3 aspect-square bg-stone-200 dark:bg-stone-800 rounded-xl overflow-hidden relative flex items-center justify-center">
+                  <img 
+                    src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80" 
+                    alt="Consultoria AxieStone"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 to-transparent"></div>
                 </div>
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                <Calendar className="mr-2 h-4 w-4" />
-                Agendar uma conversa
-              </Button>
-            </CardFooter>
-          </Card>
-        </motion.div>
+            </Card>
+          </motion.div>
 
-        {/* Services Overview */}
-        <motion.div variants={itemVariants}>
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">Nossa abordagem</h2>
-              <p className="text-stone-600 max-w-2xl mx-auto">
-                Um processo estruturado para transformar desafios em oportunidades e impulsionar o crescimento da sua empresa
-              </p>
-            </div>
+          {/* Key benefits */}
+          <motion.div variants={fadeIn} className="space-y-4">
+            <h2 className="text-xl font-semibold dark:text-white flex items-center gap-2">
+              <Brain className="h-5 w-5 text-amber-500" />
+              Benefícios Principais
+            </h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card 1 */}
-              <Card className="hover:shadow-md transition-shadow">
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="dark:bg-stone-900 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                    <PieChart className="h-5 w-5 text-amber-600" />
-                  </div>
-                  <CardTitle className="text-lg">1. Diagnóstico completo</CardTitle>
+                  <CardTitle className="text-lg dark:text-white flex items-center">
+                    <Users className="h-5 w-5 text-amber-500 mr-2" />
+                    Treinamento de Equipe
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    Análise detalhada do seu negócio, processos comerciais, equipe e resultados para identificar oportunidades de melhoria.
-                  </p>
+                <CardContent className="dark:text-stone-300">
+                  <p>Capacitação personalizada para sua equipe de vendas com técnicas específicas para o mercado de rochas ornamentais.</p>
                 </CardContent>
               </Card>
               
-              {/* Card 2 */}
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="dark:bg-stone-900 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                    <Zap className="h-5 w-5 text-amber-600" />
-                  </div>
-                  <CardTitle className="text-lg">2. Plano de ação</CardTitle>
+                  <CardTitle className="text-lg dark:text-white flex items-center">
+                    <LineChart className="h-5 w-5 text-amber-500 mr-2" />
+                    Diagnóstico de Processos
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    Desenvolvimento de estratégias personalizadas com metas claras, indicadores de performance e prazos definidos.
-                  </p>
+                <CardContent className="dark:text-stone-300">
+                  <p>Análise completa do seu funil de vendas, identificando gargalos e oportunidades de melhoria.</p>
                 </CardContent>
               </Card>
               
-              {/* Card 3 */}
-              <Card className="hover:shadow-md transition-shadow">
+              <Card className="dark:bg-stone-900 dark:border-stone-700">
                 <CardHeader className="pb-2">
-                  <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mb-4">
-                    <TrendingUp className="h-5 w-5 text-amber-600" />
-                  </div>
-                  <CardTitle className="text-lg">3. Implementação e acompanhamento</CardTitle>
+                  <CardTitle className="text-lg dark:text-white flex items-center">
+                    <PieChart className="h-5 w-5 text-amber-500 mr-2" />
+                    Inteligência de Mercado
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    Suporte contínuo na implementação das ações, com reuniões periódicas para análise de resultados e ajustes necessários.
-                  </p>
+                <CardContent className="dark:text-stone-300">
+                  <p>Insights exclusivos sobre tendências, concorrentes e novas oportunidades no setor de rochas ornamentais.</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="dark:bg-stone-900 dark:border-stone-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg dark:text-white flex items-center">
+                    <Smartphone className="h-5 w-5 text-amber-500 mr-2" />
+                    Tecnologia Aplicada
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="dark:text-stone-300">
+                  <p>Implementação de ferramentas tecnológicas para otimizar processos e aumentar a eficiência operacional.</p>
                 </CardContent>
               </Card>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Specialized Services */}
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Serviços especializados</CardTitle>
-              <CardDescription>
-                Soluções customizadas para as necessidades específicas do seu negócio
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-0">
-              <Tabs defaultValue="training" className="w-full">
-                <TabsList className="w-full justify-start mb-4 overflow-x-auto">
-                  <TabsTrigger value="training" className="flex gap-2 items-center">
-                    <Users className="h-4 w-4" /> Treinamento de vendedores
-                  </TabsTrigger>
-                  <TabsTrigger value="processes" className="flex gap-2 items-center">
-                    <BarChart3 className="h-4 w-4" /> Processos internos
-                  </TabsTrigger>
-                  <TabsTrigger value="technology" className="flex gap-2 items-center">
-                    <Building className="h-4 w-4" /> Tecnologia comercial
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="training" className="space-y-4">
-                  <div className="space-y-4 pt-2">
-                    <h3 className="text-lg font-medium">Treinamento personalizado para equipes de vendas</h3>
-                    <p className="text-stone-600">
-                      Capacitamos sua equipe comercial com técnicas avançadas de vendas específicas para o mercado de rochas ornamentais, desde a abordagem inicial até o fechamento e pós-venda.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Habilidades desenvolvidas</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Técnicas de prospecção qualificada</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Argumentação técnica sobre materiais</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Negociação e tratamento de objeções</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Gestão de carteira de clientes</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Metodologia</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Workshops presenciais</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Role-plays de situações reais</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Acompanhamento em campo</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Feedback individual e coletivo</span>
-                          </li>
-                        </ul>
-                      </div>
+          </motion.div>
+          
+          {/* Results section */}
+          <motion.div variants={fadeIn}>
+            <Card className="dark:bg-stone-900 dark:border-stone-700">
+              <CardHeader>
+                <CardTitle className="text-xl dark:text-white flex items-center">
+                  <Trophy className="h-5 w-5 text-amber-500 mr-2" />
+                  Resultados Comprovados
+                </CardTitle>
+                <CardDescription className="dark:text-stone-400">
+                  Empresas que implementaram nossa consultoria especializada
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-2">
+                <div className="grid md:grid-cols-3 gap-4 text-center">
+                  <div className="p-4 rounded-lg bg-stone-50 dark:bg-stone-800">
+                    <div className="text-3xl font-bold text-amber-600 mb-1">+73%</div>
+                    <p className="text-sm text-stone-600 dark:text-stone-400">Aumento em vendas</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-stone-50 dark:bg-stone-800">
+                    <div className="text-3xl font-bold text-amber-600 mb-1">-35%</div>
+                    <p className="text-sm text-stone-600 dark:text-stone-400">Redução no ciclo de vendas</p>
+                  </div>
+                  <div className="p-4 rounded-lg bg-stone-50 dark:bg-stone-800">
+                    <div className="text-3xl font-bold text-amber-600 mb-1">+42%</div>
+                    <p className="text-sm text-stone-600 dark:text-stone-400">Aumento em ticket médio</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex-col items-start pt-4 border-t dark:border-stone-700">
+                <p className="text-sm text-stone-600 dark:text-stone-400 mb-2">
+                  *Média de resultados obtidos por clientes após 6 meses de implementação
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="outline" className="dark:border-stone-700">Marmorarias Brasil</Badge>
+                  <Badge variant="outline" className="dark:border-stone-700">StoneTech SP</Badge>
+                  <Badge variant="outline" className="dark:border-stone-700">Granitos Premium</Badge>
+                  <Badge variant="outline" className="dark:border-stone-700">+ 16 empresas</Badge>
+                </div>
+              </CardFooter>
+            </Card>
+          </motion.div>
+          
+          {/* Process */}
+          <motion.div variants={fadeIn}>
+            <Card className="dark:bg-stone-900 dark:border-stone-700">
+              <CardHeader>
+                <CardTitle className="text-xl dark:text-white">Como funciona</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <ol className="space-y-4">
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 flex items-center justify-center mr-3 mt-0.5">1</div>
+                    <div>
+                      <h3 className="font-medium dark:text-white">Diagnóstico Inicial</h3>
+                      <p className="text-stone-600 dark:text-stone-400 mt-1">
+                        Análise completa da sua operação atual, identificando pontos fortes e oportunidades de melhoria
+                        em vendas, marketing e processos internos.
+                      </p>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="processes" className="space-y-4">
-                  <div className="space-y-4 pt-2">
-                    <h3 className="text-lg font-medium">Otimização de processos internos</h3>
-                    <p className="text-stone-600">
-                      Reformulamos os fluxos de trabalho para eliminar ineficiências, reduzir custos e melhorar a experiência do cliente, desde o primeiro contato até a entrega final do projeto.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Áreas de atuação</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Gestão de estoque e logística</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Fluxo de orçamentos e aprovações</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Processos de medição e instalação</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Controle de qualidade e pós-venda</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Benefícios</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Redução de tempo em até 40%</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Minimização de erros e retrabalho</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Aumento da satisfação do cliente</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Otimização de recursos humanos</span>
-                          </li>
-                        </ul>
-                      </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 flex items-center justify-center mr-3 mt-0.5">2</div>
+                    <div>
+                      <h3 className="font-medium dark:text-white">Plano de Ação Personalizado</h3>
+                      <p className="text-stone-600 dark:text-stone-400 mt-1">
+                        Desenvolvemos estratégias específicas para seu negócio, considerando seu orçamento, recursos
+                        e objetivos a curto, médio e longo prazo.
+                      </p>
                     </div>
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="technology" className="space-y-4">
-                  <div className="space-y-4 pt-2">
-                    <h3 className="text-lg font-medium">Implementação de tecnologia comercial</h3>
-                    <p className="text-stone-600">
-                      Integramos sistemas e ferramentas digitais para modernizar seu negócio, tornando-o mais competitivo e capacitado para atender às demandas do mercado atual.
-                    </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Soluções tecnológicas</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">CRM especializado para o setor</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Visualização 3D de projetos</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Automação de orçamentos</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Controle digital de estoque</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="bg-stone-50 p-4 rounded-lg">
-                        <h4 className="font-medium mb-2">Resultados</h4>
-                        <ul className="space-y-2">
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Agilidade em processos comerciais</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Melhor experiência para o cliente</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Decisões baseadas em dados</span>
-                          </li>
-                          <li className="flex items-center gap-2">
-                            <Check className="h-4 w-4 text-amber-600" />
-                            <span className="text-sm">Integração entre departamentos</span>
-                          </li>
-                        </ul>
-                      </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 flex items-center justify-center mr-3 mt-0.5">3</div>
+                    <div>
+                      <h3 className="font-medium dark:text-white">Implementação Assistida</h3>
+                      <p className="text-stone-600 dark:text-stone-400 mt-1">
+                        Nossa equipe trabalha junto com você na implementação das mudanças, garantindo a correta
+                        execução das estratégias propostas.
+                      </p>
                     </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-            <CardFooter className="flex justify-center pt-6">
-              <Button>
-                <Info className="mr-2 h-4 w-4" />
-                Saiba mais sobre nossos serviços
-              </Button>
-            </CardFooter>
-          </Card>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 flex items-center justify-center mr-3 mt-0.5">4</div>
+                    <div>
+                      <h3 className="font-medium dark:text-white">Acompanhamento e Ajustes</h3>
+                      <p className="text-stone-600 dark:text-stone-400 mt-1">
+                        Monitoramento contínuo dos resultados, com reuniões mensais para análise de indicadores e
+                        ajustes necessários nas estratégias.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
-
-        {/* Testimonials */}
-        <motion.div variants={itemVariants}>
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">O que nossos clientes dizem</h2>
-              <p className="text-stone-600 max-w-2xl mx-auto">
-                Empresas que transformaram seus resultados com nossa consultoria
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Testimonial 1 */}
-              <Card className="bg-stone-50 border-none">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                    ))}
+        
+        {/* Sidebar */}
+        <motion.div 
+          className="space-y-6"
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
+          {/* Form card */}
+          <motion.div variants={fadeIn}>
+            <Card className="dark:bg-stone-900 dark:border-stone-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="dark:text-white">Solicite um contato</CardTitle>
+                <CardDescription className="dark:text-stone-400">
+                  Preencha o formulário e nossa equipe entrará em contato
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium dark:text-stone-300" htmlFor="name">Nome completo</label>
+                    <Input id="name" placeholder="Seu nome" className="dark:bg-stone-800 dark:border-stone-700" />
                   </div>
-                  <CardTitle className="text-lg">
-                    "Resultados surpreendentes"
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    "O treinamento da nossa equipe de vendas resultou em um aumento de 42% no fechamento de negócios em apenas 3 meses. A metodologia é prática e os consultores realmente entendem do setor de rochas."
-                  </p>
-                </CardContent>
-                <CardFooter>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium dark:text-stone-300" htmlFor="company">Empresa</label>
+                    <Input id="company" placeholder="Nome da sua empresa" className="dark:bg-stone-800 dark:border-stone-700" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium dark:text-stone-300" htmlFor="email">E-mail</label>
+                    <Input id="email" type="email" placeholder="seu@email.com" className="dark:bg-stone-800 dark:border-stone-700" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium dark:text-stone-300" htmlFor="phone">Telefone</label>
+                    <Input id="phone" placeholder="(00) 00000-0000" className="dark:bg-stone-800 dark:border-stone-700" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium dark:text-stone-300" htmlFor="message">Mensagem (opcional)</label>
+                    <Textarea 
+                      id="message" 
+                      placeholder="Descreva brevemente seu interesse na consultoria"
+                      rows={3}
+                      className="resize-none dark:bg-stone-800 dark:border-stone-700"
+                    />
+                  </div>
+                  <Button className="w-full bg-amber-500 hover:bg-amber-600 text-stone-900" type="submit">
+                    Enviar solicitação
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Consultant card */}
+          <motion.div variants={fadeIn}>
+            <Card className="dark:bg-stone-900 dark:border-stone-700">
+              <CardHeader>
+                <CardTitle className="dark:text-white text-lg">Conheça nossos consultores</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center overflow-hidden">
+                    <User2 className="h-6 w-6 text-stone-400" />
+                  </div>
                   <div>
-                    <p className="font-medium text-sm">Carlos Mendes</p>
-                    <p className="text-stone-500 text-xs">Diretor, Marmoraria Elite</p>
+                    <h3 className="font-medium dark:text-white">Carlos Mendes</h3>
+                    <p className="text-sm text-stone-500 dark:text-stone-400">Especialista em Vendas B2B</p>
                   </div>
-                </CardFooter>
-              </Card>
-              
-              {/* Testimonial 2 */}
-              <Card className="bg-stone-50 border-none">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                    ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center overflow-hidden">
+                    <User2 className="h-6 w-6 text-stone-400" />
                   </div>
-                  <CardTitle className="text-lg">
-                    "Otimização completa"
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    "A consultoria reformulou nossos processos internos, eliminando gargalos que nem sabíamos que existiam. Reduzimos o tempo de entrega em 30% e melhoramos a satisfação dos clientes."
-                  </p>
-                </CardContent>
-                <CardFooter>
                   <div>
-                    <p className="font-medium text-sm">Ana Paula Costa</p>
-                    <p className="text-stone-500 text-xs">Gestora, Pedras Premium</p>
+                    <h3 className="font-medium dark:text-white">Ana Oliveira</h3>
+                    <p className="text-sm text-stone-500 dark:text-stone-400">Especialista em Processos</p>
                   </div>
-                </CardFooter>
-              </Card>
-              
-              {/* Testimonial 3 */}
-              <Card className="bg-stone-50 border-none">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} className="h-4 w-4 fill-amber-500 text-amber-500" />
-                    ))}
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-stone-200 dark:bg-stone-800 flex items-center justify-center overflow-hidden">
+                    <User2 className="h-6 w-6 text-stone-400" />
                   </div>
-                  <CardTitle className="text-lg">
-                    "Transformação digital"
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-stone-600 text-sm">
-                    "A implementação do CRM e das ferramentas de visualização 3D revolucionou nossa forma de trabalhar. Os clientes ficam impressionados e nossos vendedores têm mais confiança para fechar negócios."
-                  </p>
-                </CardContent>
-                <CardFooter>
                   <div>
-                    <p className="font-medium text-sm">Roberto Silva</p>
-                    <p className="text-stone-500 text-xs">CEO, Marmoraria Silva</p>
+                    <h3 className="font-medium dark:text-white">Roberto Santos</h3>
+                    <p className="text-sm text-stone-500 dark:text-stone-400">Especialista em Tecnologia</p>
                   </div>
-                </CardFooter>
-              </Card>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Call to Action */}
-        <motion.div variants={itemVariants}>
-          <Card className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-amber-100">
-            <CardHeader>
-              <Badge className="w-fit mb-2" variant="outline">Exclusivo Plano GrowthHacking</Badge>
-              <CardTitle className="text-2xl">Pronto para transformar seu negócio?</CardTitle>
-              <CardDescription>
-                Agende uma conversa com nossos especialistas e descubra como podemos impulsionar seus resultados
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <MessageCircle className="h-5 w-5 text-amber-600" />
+                </div>
+                <Button variant="outline" className="w-full flex items-center justify-center mt-2 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800">
+                  Ver todos os consultores
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* FAQ card */}
+          <motion.div variants={fadeIn}>
+            <Card className="dark:bg-stone-900 dark:border-stone-700">
+              <CardHeader>
+                <CardTitle className="dark:text-white text-lg">Perguntas frequentes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium dark:text-white">Qual o investimento necessário?</h3>
+                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
+                    O serviço de consultoria está disponível no plano Expansão Total, com valor a partir de R$ 13.997/mês.
+                  </p>
                 </div>
                 <div>
-                  <p className="font-medium">Consultoria inicial gratuita</p>
-                  <p className="text-sm text-stone-600">Análise preliminar do seu negócio sem compromisso</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-amber-600" />
+                  <h3 className="font-medium dark:text-white">Quanto tempo dura o processo?</h3>
+                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
+                    O programa padrão tem duração de 3 meses, mas pode ser estendido conforme necessidade.
+                  </p>
                 </div>
                 <div>
-                  <p className="font-medium">Agenda flexível</p>
-                  <p className="text-sm text-stone-600">Horários que se adaptam à sua disponibilidade</p>
+                  <h3 className="font-medium dark:text-white">Preciso estar no plano Expansão Total?</h3>
+                  <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
+                    Sim, a consultoria especializada é um benefício exclusivo do plano Expansão Total.
+                  </p>
+                </div>
+                <Button variant="link" className="p-0 h-auto text-amber-600 dark:text-amber-400">Ver todas as perguntas</Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Testimonial card */}
+          <motion.div variants={fadeIn}>
+            <Card className="bg-stone-50 dark:bg-stone-900 dark:border-stone-700 overflow-hidden">
+              <div className="px-6 pt-6">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                    <User2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium dark:text-white">Roberto Almeida</h3>
+                    <p className="text-sm text-stone-600 dark:text-stone-400">Diretor • Mármores & Granitos Brasil</p>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-            <CardFooter className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="w-full sm:w-auto">
-                <Calendar className="mr-2 h-4 w-4" />
-                Agendar consultoria
-              </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                <Info className="mr-2 h-4 w-4" />
-                Solicitar informações
-              </Button>
-            </CardFooter>
-          </Card>
+              <CardContent className="pt-4">
+                <div className="text-stone-600 dark:text-stone-300 relative">
+                  <span className="text-4xl text-amber-300 dark:text-amber-700 absolute top-0 left-0">"</span>
+                  <p className="pl-6 pt-2">
+                    A consultoria transformou a maneira como abordamos nossos clientes. Os resultados foram imediatos: aumentamos em 58% nossas vendas já no primeiro trimestre.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         </motion.div>
+      </div>
+      
+      {/* Call to action */}
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeIn}
+        transition={{ delay: 0.5 }}
+      >
+        <Card className="mt-8 border-0 shadow-lg bg-gradient-to-r from-amber-500 to-amber-600 text-stone-900 dark:text-stone-50">
+          <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-3">
+              <h2 className="text-2xl font-bold">Pronto para transformar seu negócio?</h2>
+              <p className="opacity-90">
+                Agende agora uma consulta inicial gratuita com nossos especialistas
+              </p>
+              <div className="flex items-center space-x-2">
+                <Check className="h-5 w-5" />
+                <span>Sem compromisso</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5" />
+                <span>30 minutos de diagnóstico inicial</span>
+              </div>
+            </div>
+            <div>
+              <Button className="bg-white hover:bg-stone-100 text-amber-600" size="lg">
+                Agendar consulta gratuita
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
     </div>
-  );
-};
-
-// Estrelinha para os depoimentos
-const Star = (props: React.SVGProps<SVGSVGElement>) => {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
   );
 };
 

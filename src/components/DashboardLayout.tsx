@@ -14,11 +14,11 @@ import {
   Search,
   ChevronDown,
   User,
-  MessageSquare,
   Store,
   Briefcase,
   TrendingUp,
-  Info
+  Info,
+  LayoutKanban
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,8 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { ModeToggle } from './mode-toggle';
+import { motion } from 'framer-motion';
 
 const DashboardLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -61,7 +63,7 @@ const DashboardLayout: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Meus Leads', href: '/dashboard/leads', icon: Users },
-    { name: 'Comunidade', href: '/dashboard/community', icon: MessageSquare },
+    { name: 'Funil de Leads', href: '/dashboard/funnel', icon: LayoutKanban },
     { name: 'Marketplace', href: '/dashboard/marketplace', icon: Store },
     { name: 'Arquitetos', href: '/dashboard/architects', icon: Briefcase },
     { name: 'Preço do Mercado', href: '/dashboard/market-prices', icon: TrendingUp },
@@ -84,20 +86,20 @@ const DashboardLayout: React.FC = () => {
   const userInitials = "JS";
 
   return (
-    <div className="min-h-screen bg-stone-50/50 flex overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-stone-50/50 to-white dark:from-stone-900 dark:to-stone-950 flex overflow-hidden transition-colors duration-300">
       {/* Sidebar - versão para desktop */}
       <div className={cn(
         "fixed top-0 left-0 z-30 h-full lg:translate-x-0 transition-all duration-300 w-64 ease-in-out",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
-        <div className="flex flex-col h-full bg-white border-r border-stone-100 shadow-sm">
-          <div className="flex h-16 items-center px-4 border-b border-stone-100">
+        <div className="flex flex-col h-full bg-white dark:bg-stone-950 border-r border-stone-100 dark:border-stone-800 shadow-sm">
+          <div className="flex h-16 items-center px-4 border-b border-stone-100 dark:border-stone-800">
             <div 
               onClick={() => navigate('/')}
               className="flex items-center cursor-pointer"
             >
               <span className="text-xl font-bold bg-gradient-to-r from-amber-600 to-amber-500 bg-clip-text text-transparent">
-                Radar<span className="text-stone-800">B2B</span>
+                Axie<span className="text-stone-800 dark:text-white">Stone</span>
               </span>
             </div>
             <button 
@@ -119,8 +121,8 @@ const DashboardLayout: React.FC = () => {
                     className={cn(
                       "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200",
                       isActive
-                        ? "bg-amber-50 text-amber-600"
-                        : "text-stone-600 hover:bg-amber-50/50 hover:text-amber-600"
+                        ? "bg-amber-50 text-amber-600 dark:bg-amber-900/20 dark:text-amber-400"
+                        : "text-stone-600 dark:text-stone-400 hover:bg-amber-50/50 hover:text-amber-600 dark:hover:bg-amber-900/10 dark:hover:text-amber-400"
                     )}
                     onClick={() => setSidebarOpen(false)}
                   >
@@ -132,13 +134,8 @@ const DashboardLayout: React.FC = () => {
                       aria-hidden="true"
                     />
                     <span className="truncate">{item.name}</span>
-                    {item.name === "Comunidade" && (
-                      <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full animate-pulse-soft">
-                        5
-                      </span>
-                    )}
                     {item.name === "Meus Leads" && (
-                      <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full animate-pulse-soft">
+                      <span className="ml-auto inline-flex items-center justify-center w-5 h-5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 rounded-full animate-pulse-soft">
                         3
                       </span>
                     )}
@@ -148,11 +145,11 @@ const DashboardLayout: React.FC = () => {
             </nav>
           </div>
           
-          <div className="p-4 border-t border-stone-100">
+          <div className="p-4 border-t border-stone-100 dark:border-stone-800">
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full flex items-center justify-start px-4 py-2 text-sm font-medium text-stone-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+              className="w-full flex items-center justify-start px-4 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/10 dark:hover:text-red-400 rounded-lg transition-colors"
             >
               <LogOut className="mr-3 h-5 w-5 text-stone-400" aria-hidden="true" />
               Sair
@@ -172,11 +169,11 @@ const DashboardLayout: React.FC = () => {
       {/* Conteúdo principal */}
       <div className="flex-1 min-w-0 lg:ml-64 transition-all duration-300">
         {/* Header da aplicação */}
-        <header className="bg-white shadow-sm border-b border-stone-100 z-10 sticky top-0">
+        <header className="bg-white dark:bg-stone-950 shadow-sm border-b border-stone-100 dark:border-stone-800 z-10 sticky top-0">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6">
             <div className="flex items-center flex-1">
               <button
-                className="lg:hidden text-stone-500 hover:text-amber-600 mr-4 focus:outline-none"
+                className="lg:hidden text-stone-500 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-500 mr-4 focus:outline-none"
                 onClick={toggleSidebar}
               >
                 <Menu className="h-6 w-6" />
@@ -190,17 +187,19 @@ const DashboardLayout: React.FC = () => {
                   <Input 
                     type="search" 
                     placeholder="Buscar leads, empresas..." 
-                    className="pl-10 bg-stone-50 border-stone-200 focus:border-amber-500 rounded-full text-sm"
+                    className="pl-10 bg-stone-50 dark:bg-stone-900 border-stone-200 dark:border-stone-700 focus:border-amber-500 dark:focus:border-amber-600 rounded-full text-sm"
                   />
                 </div>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
+              <ModeToggle />
+              
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-stone-500 hover:text-amber-600 hover:bg-amber-50 rounded-full relative"
+                className="text-stone-500 dark:text-stone-400 hover:text-amber-600 dark:hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-full relative"
               >
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
@@ -210,26 +209,26 @@ const DashboardLayout: React.FC = () => {
                 <DropdownMenuTrigger asChild>
                   <Button 
                     variant="ghost" 
-                    className="p-1.5 flex items-center gap-2 text-stone-700 hover:bg-stone-100"
+                    className="p-1.5 flex items-center gap-2 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
                   >
-                    <Avatar className="h-8 w-8 bg-amber-100 text-amber-800">
+                    <Avatar className="h-8 w-8 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                       <AvatarFallback>{userInitials}</AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
                       <p className="text-sm font-medium">{userName}</p>
-                      <p className="text-xs text-stone-500">Premium</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">Premium</p>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-stone-500 ml-1" />
+                    <ChevronDown className="h-4 w-4 text-stone-500 dark:text-stone-400 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <div className="flex items-center gap-2 p-2 border-b">
-                    <div className="bg-amber-100 text-amber-800 w-10 h-10 rounded-full flex items-center justify-center">
+                  <div className="flex items-center gap-2 p-2 border-b dark:border-stone-700">
+                    <div className="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 w-10 h-10 rounded-full flex items-center justify-center">
                       <User className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{userName}</p>
-                      <p className="text-xs text-stone-500">contato@empresa.com</p>
+                      <p className="text-sm font-medium dark:text-stone-100">{userName}</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">contato@empresa.com</p>
                     </div>
                   </div>
                   <DropdownMenuItem onClick={() => navigate('/dashboard/settings')}>
@@ -241,7 +240,7 @@ const DashboardLayout: React.FC = () => {
                     <span>Meu plano</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-700">
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 dark:text-red-400 focus:text-red-700 dark:focus:text-red-300">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Sair</span>
                   </DropdownMenuItem>
